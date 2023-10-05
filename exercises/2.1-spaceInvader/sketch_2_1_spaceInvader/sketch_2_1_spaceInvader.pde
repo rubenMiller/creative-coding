@@ -1,3 +1,6 @@
+int output_counter = 0;
+String output_string = "";
+
 void setup() {
   size(800, 800);
   background(100, 180, 180);
@@ -19,5 +22,9 @@ void draw() {
       }
     }
   }
-  //saveFrame("output/output-4.png");
+  if(mousePressed == true) {
+    saveFrame("output2/output-" + output_counter + ".png");
+    output_counter++;
+    println("saved output number: ", output_counter);
+  }
 }
