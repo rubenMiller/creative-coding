@@ -1,21 +1,25 @@
 ArrayList<ball> balls = new ArrayList<ball>();
+int numberOfBalls = 30;
 int time = millis();
 
 void setup() {
   size(1000, 1000);
   background(0, 0, 0);
   frameRate(30);
-  noStroke();
-  fill(255, 255, 255);
-  ball b = new ball(new PVector(0, 0), new PVector(0, 0), 6, 5, 20);
-  balls.add(b);
+  stroke(10);
+  stroke(255, 255, 255);
+  noFill();
+  for(int i = 0; i < numberOfBalls; i++) {
+    ball b = new ball(12, 5, 20);
+    balls.add(b);
+  }
+
   
   time = millis();
 }
 
 void draw() {
   float elapsedTime = millis() - time;
-  println(elapsedTime);
   background(0, 0, 0);
   for(int i = 0; i < balls.size(); i++) {
      balls.get(i).update(elapsedTime);
@@ -29,25 +33,47 @@ void draw() {
 class ball {
   PVector location;
   PVector direction;
-  float speed;
+  float topSpeed;
   float attraction;
   int size;
-  ball(PVector Location, PVector Direction, float Speed, float Attraction, int Size) {
-    location = Location;
-    direction = Direction;
-    speed = Speed;
+  ball(float Speed, float Attraction, int Size) {
+    location = new PVector(random(width), random(height));
+    direction = new PVector(0, 0);
+    topSpeed = Speed;
     attraction = Attraction;
     size = Size;
   }
   
   void update(float elapsedTime) {
-      //first basic following of the mouse
-      PVector newDirection = new PVector(location.x - mouseX, location.y - mouseY);
-      newDirection.normalize();
-      direction = newDirection;
-      location =  location.sub(direction.mult(speed * elapsedTime / 33));
-      //location.x = location.x - direction.x * speed;
-      //location.y = location.y - direction.y * speed;
+      PVector mouseDirection = new PVector(mouseX, mouseY);
+      PVector dir = PVector.sub(mouseDirection, location);
+      dir.normalize();
+      dir.mult(0.5);
+     
+      
+      direction.add(dir);
+      
+      println(direction.mag());
+      direction.limit(topSpeed);
+      if(mousePressed == false) {
+        location.add(direction.copy().mult(elapsedTime / 33));
+      }else{
+        location.sub(direction.copy().mult(elapsedTime / 33));
+      }
+      checkEdges();
+  }
+  void checkEdges() {
+    if (location.x > width) {
+      location.x = 0;
+    } else if (location.x < 0) {
+      location.x = width;
+    }
+ 
+    if (location.y > height) {
+      location.y = 0;
+    }  else if (location.y < 0) {
+      location.y = height;
+    }
   }
   void draw() {
      circle(location.x, location.y, size); 
