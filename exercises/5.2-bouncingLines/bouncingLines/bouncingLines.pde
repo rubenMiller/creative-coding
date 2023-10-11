@@ -3,7 +3,7 @@ int numberOfBalls = 30;
 int time = millis();
 int c_3 = 0;
 int c_1 = 0;
-int color_change = 1;
+int color_change = 5;
 
 void setup() {
   size(1000, 1000);
@@ -14,8 +14,6 @@ void setup() {
     ball b = new ball(12);
     balls.add(b);
   }
-
-  
   time = millis();
 }
 

@@ -1,10 +1,10 @@
 int dotSize = 3;
-int roseSize = 100;
+int roseSize = 200;
 float time = 0.0;
 ArrayList<roseCurve> curvesList = new ArrayList<roseCurve>();
 
 void setup() {
-   size(1000, 1000);
+   size(2600, 1200);
    background(0,0,0);
    noStroke();
    time = millis();

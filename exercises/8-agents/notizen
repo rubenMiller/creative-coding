@@ -1,0 +1,19 @@
+Es gibt folgende wichtige Funktionen:
+
+alignment
+separation
+cohesion
+
+alignemnt
+    gibt average direction von boids im Umkreis zurück
+    
+separation
+    schaut durch alle boids, ob der abstand kleiner als ein bestimmter wert ist.
+        wenn ja, wird der vektor zu dem Rückgabevekrot addiert
+        
+cohesion
+    schaut sich den standpunkt aller boids in einem Abstand an
+    gibt vektor in diese Richtung zurück
+    
+    
+Die zurückgegebenen Vektoren werden addiert, gewichtet und dann auf die position des boids angewendet
