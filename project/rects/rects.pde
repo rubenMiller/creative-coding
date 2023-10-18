@@ -63,7 +63,6 @@ void draw() {
   lastMouse = new PVector(mouseX, mouseY);
 }
 
-
 ArrayList<Edge> searchedEdges = new ArrayList<Edge>();
 
 boolean compareRect(Rect r1, Rect r2) {
@@ -103,17 +102,17 @@ boolean find(Rect rect, Rect root) {
   seenRects.add(rect);
   while(!queue.isEmpty()) {
     Rect c = queue.get(0);
-    queue.remove(c); //<>//
+    queue.remove(c);
     if(compareRect(c, root)) return true;
     for(Edge e : mst) {
       //check if nachfolger
-      if(compareRect(c, e.start) && !seenRects.contains(e.end)) { //<>//
+      if(compareRect(c, e.start) && !seenRects.contains(e.end)) {
         //e.end ist das nächste in der schlange
-        queue.add(e.end); //<>//
+        queue.add(e.end);
         seenRects.add(e.end);
-      } //<>//
+      }
       if(compareRect(c, e.end) && !seenRects.contains(e.start)) {
-        //e.end ist das nächste in der schlange //<>//
+        //e.end ist das nächste in der schlange
         queue.add(e.start);
         seenRects.add(e.start);
       }
@@ -144,7 +143,7 @@ boolean rectanglesCollide(Rect rect1, Rect rect2) {
   float height2 = rect2.height;
   
   if(x1 + width1 + rectDistance >= x2 && x1 <= x2 + width2 + rectDistance && y1 + height1 + rectDistance >= y2 && y1 <= y2 + height2 + rectDistance) {
-    println("collission detected");
+    //println("collission detected");
     return true;
   }
   return false;
