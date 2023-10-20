@@ -5,14 +5,12 @@ from typing import List, Any
 
 import pygame
 
-from os import system
+SCREEN_WIDTH = 2000
+SCREEN_HEIGHT = 1000
 
 
-class Point:
-
-    def __init__(self):
-        self.x = int(random() * 1000)
-        self.y = int(random() * 1000)
+def make_point():
+    return [int(random() * SCREEN_WIDTH), int(random() * SCREEN_HEIGHT)]
 
 
 # From here: https://www.geeksforgeeks.org/kruskals-minimum-spanning-tree-algorithm-greedy-algo-2/
@@ -134,9 +132,7 @@ def drawLoop(mst: List[List[Any]], points, startTime: float, screen, elapsedTime
         start = mst[m][0]
         end = mst[m][1]
         #print("Draw line between, ", start, " , ", end)
-        p1 = [points[start].x, points[start].y]
-        p2 = [points[end].x, points[end].y]
-        pygame.draw.line(screen, white, p1, p2, 5)
+        pygame.draw.line(screen, white, points[start], points[end], 5)
 
     pygame.display.update()
     return True
@@ -145,46 +141,40 @@ def loop(screen):
     points = []
 
     for i in range(300):
-        p = Point()
+        p = make_point()
         points.append(p)
-        #pygame.draw.circle(screen, (255, 0, 0), (p.x, p.y), 10)
+        #pygame.draw.circle(screen, (255, 0, 0), p, 10)
 
-    g = Graph(len(points))
-    for i in range(len(points)):
-        for j in range(i, len(points)):
-            if j == i:
-                continue
-            w = math.dist([points[i].x, points[i].y], [points[j].x, points[j].y])
-            g.addEdge(i, j, w)
+    g = create_graph(points)
 
-    # g.addEdge(0, 1, 10)
-    # g.addEdge(0, 2, 6)
-    # g.addEdge(0, 3, 5)
-    # g.addEdge(1, 3, 15)
-    # g.addEdge(2, 3, 4)
-
-
-
-    # Function call
     mst = g.KruskalMST()
+
     print("Starting gameLoop")
     run = True
     startTime = int(round(time.time() * 1000))
     while(run):
         elapsedTime = int(round(time.time() * 1000)) - startTime
-        print(elapsedTime)
         run = drawLoop(mst, points, 0, screen, elapsedTime)
 
     return
+
+
+def create_graph(points):
+    g = Graph(len(points))
+    for i in range(len(points)):
+        for j in range(i, len(points)):
+            if j == i:
+                continue
+            w = math.dist(points[i], points[j])
+            g.addEdge(i, j, w)
+    return g
+
 
 def main():
 
     pygame.init()
 
-    screen_width = 1000
-    screen_height = 1000
-
-    screen = pygame.display.set_mode((screen_width, screen_height))
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     while(True):
         loop(screen)
