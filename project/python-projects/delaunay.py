@@ -10,13 +10,13 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 
 
-def make_point():
-    return [int(random() * SCREEN_WIDTH), int(random() * SCREEN_HEIGHT)]
+def make_point(width, height):
+    return [int(random() * width), int(random() * height)]
 
 
 def loop(screen):
 
-    dela, points = create_delanauy_mesh()
+    dela, points = create_delanauy_mesh(SCREEN_WIDTH, SCREEN_HEIGHT, 300)
     edge_list = create_edge_list(dela)
 
     for edge in edge_list:
@@ -27,8 +27,8 @@ def loop(screen):
     time.sleep(5)
 
 
-def create_delanauy_mesh():
-    points = create_points()
+def create_delanauy_mesh(w, h, nop):
+    points = create_points(w, h, nop)
     dela = Delaunay(points)
 
     return dela, points
@@ -42,10 +42,10 @@ def create_edge_list(dela):
     return edge_list
 
 
-def create_points():
+def create_points(w, h, number_of_points):
     points = np.empty((0, 2))
-    for i in range(10):
-        p = make_point()
+    for i in range(number_of_points):
+        p = make_point(w, h)
         points = np.append(points, [p], axis=0)
         # pygame.draw.circle(screen, (255, 0, 0), (p[0], p[1]), 10)
     return points

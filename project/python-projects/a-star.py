@@ -26,12 +26,13 @@ def find_neighbors(pindex, triang):
 
     return triang.vertex_neighbor_vertices[1][triang.vertex_neighbor_vertices[0][pindex]:triang.vertex_neighbor_vertices[0][pindex+1]]
 def a_star(screen):
-    dela, points = create_delanauy_mesh()
+
+    dela, points = create_delanauy_mesh(SCREEN_WIDTH, SCREEN_HEIGHT, 800)
     edge_list = create_edge_list(dela)
-    start = 1
+    start = 0
     end = len(points)-1
     dist = calculate_distance(points[start], points[end])
-    queue = [(start, 0, dist, dist, [0])]
+    queue = [(start, 0, dist, dist, [start])]
     cpath = []
     drawOnce(screen, points, edge_list)
     while len(queue) > 0:
@@ -56,15 +57,17 @@ def a_star(screen):
 
 
 
-    drawastart(screen, cpath, points)
+        drawPath(screen, cpath[-2:], points, 2)
+        #time.sleep(.3)
 
-    time.sleep(200)
+    drawPath(screen, cpath, points, 6)
+    time.sleep(5)
 
 
-def drawastart(screen, path, points):
+def drawPath(screen, path, points, weight):
     first = path[0]
     for p in path:
-        pygame.draw.line(screen, (0, 255, 0), points[first], points[p], 8)
+        pygame.draw.line(screen, (0, 255, 0), points[first], points[p], weight)
         first = p
 
         pygame.display.update()
@@ -73,11 +76,17 @@ def drawastart(screen, path, points):
 def drawOnce(screen, points, edges):
 
     pygame.draw.circle(screen, (255, 0, 0), points[0], 10)
-    pygame.draw.circle(screen, (255, 0, 0), points[9], 10)
+    pygame.draw.circle(screen, (255, 0, 0), points[-1], 10)
 
     for e in edges:
         pygame.draw.line(screen, (255, 255, 255), points[e[0]], points[e[1]], 2)
 
+    #pygame.font.init()
+    #my_font = pygame.font.SysFont('Comic Sans MS', 30)
+
+    #for counter,  p in enumerate(points):
+    #    text_surface = my_font.render(str(counter), False, (255, 0, 0))
+    #    screen.blit(text_surface, (p[0], p[1]))
     pygame.display.update()
 
 
@@ -86,7 +95,9 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.fill((0, 0, 0))
-    a_star(screen)
+    while(True):
+        screen.fill((0, 0, 0))
+        a_star(screen)
 
 
 if __name__ == "__main__":
