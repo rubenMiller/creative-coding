@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Transactions;
 using OpenTK.Graphics.ES11;
+using OpenTK.Graphics.ES20;
 
 namespace Example;
 
@@ -15,7 +16,7 @@ public class AStarAlgorithm
     public List<List<double>> nodes;
     private List<List<int>> neighbours;
     private List<int> lookedAt = new List<int>();
-    public List<int> currentPath;
+    public List<int> currentPath = new List<int>();
     public List<List<int>> walkedPaths = new List<List<int>>();
     public int startNode;
     public int endNode;
@@ -26,9 +27,18 @@ public class AStarAlgorithm
         start();
     }
 
-    public void start()
+    private void Reset()
     {
         this.queue.Clear();
+        this.lookedAt.Clear();
+        this.currentPath.Clear();
+        this.walkedPaths.Clear();
+    }
+
+    public void start()
+    {
+        Reset();
+
         var rand = new Random();
         startNode = rand.Next(nodes.Count);
         endNode = rand.Next(nodes.Count);
@@ -37,17 +47,16 @@ public class AStarAlgorithm
         queue.Enqueue(queueObject, h);
     }
 
-    public List<int> step()
+    public bool step()
     {
         if (queue.Count < 1)
         {
-            return new List<int> { 0 };
+            return false;
         }
         QueueObject current = queue.Dequeue();
         if (current.last_node == endNode)
         {
-            // TODO: add behavoir, when this is reached!
-            return new List<int> { 1 };
+            return false;
         }
 
         foreach (var n in neighbours[current.last_node])
@@ -66,7 +75,7 @@ public class AStarAlgorithm
 
         this.currentPath = current.path;
         walkedPaths.Add(current.path);
-        return current.path;
+        return true;
     }
 
     private static List<int> FindNeighbors(int pIndex, List<List<float>> edgeList)

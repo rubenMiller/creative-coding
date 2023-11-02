@@ -2,6 +2,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Zenseless.Spatial;
 
 namespace Example;
@@ -48,11 +49,16 @@ internal class View
 
 	private void DrawMap(Model model)
 	{
+
 		GL.Color4(Color4.Red);
 		Vector2 start = new Vector2((float)model.astar.nodes[model.astar.startNode][0], (float)model.astar.nodes[model.astar.startNode][1]);
 		Vector2 end = new Vector2((float)model.astar.nodes[model.astar.endNode][0], (float)model.astar.nodes[model.astar.endNode][1]);
-		DrawCircle(start, 0.01f);
-		DrawCircle(end, 0.01f);
+		DrawCircle(start, 0.02f);
+		DrawCircle(end, 0.02f);
+
+		//GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.Zero);
+		//GL.Enable(EnableCap.Blend);
+
 
 		GL.LineWidth(1);
 		GL.Color4(Color4.White);
@@ -65,28 +71,81 @@ internal class View
 		GL.End();
 
 
-		GL.LineWidth(1);
-		GL.Color4(Color4.Gray);
-
-		foreach (var path in model.astar.walkedPaths)
+		if (model.astar.currentPath.Count == 0)
 		{
+			return;
+		}
+
+		// Draws the current path
+		GL.LineWidth(3);
+		GL.Color4(0.9f, 0, 0, 1.0f);
+		GL.Begin(PrimitiveType.Lines);
+		GL.Vertex2(model.astar.nodes[model.astar.startNode][0], model.astar.nodes[model.astar.startNode][1]);
+		foreach (var point in model.astar.currentPath.Skip(1))
+		{
+			// If not given 2 times, just every second line is drawn
+			GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+			GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+		}
+		GL.Vertex2(model.astar.nodes[model.astar.currentPath.Last()][0], model.astar.nodes[model.astar.currentPath.Last()][1]);
+		GL.End();
+
+		// Draws the most recent 5 paths
+		GL.LineWidth(2);
+		float color = 0.0f;
+		foreach (var path in model.astar.walkedPaths.TakeLast(5))
+		{
+			GL.Color4(0.9f, color, color, 1.0f);
+			color += 0.1f;
 			GL.Begin(PrimitiveType.Lines);
-			foreach (var point in path)
+			GL.Vertex2(model.astar.nodes[model.astar.startNode][0], model.astar.nodes[model.astar.startNode][1]);
+			foreach (var point in path.Skip(1))
 			{
+				// If not given 2 times, just every second line is drawn
+				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
 				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
 			}
 			GL.End();
 		}
 
-
-		GL.LineWidth(3);
-		GL.Color4(Color4.Red);
-		GL.Begin(PrimitiveType.Lines);
-		foreach (var point in model.astar.currentPath)
+		// Draws the next 30 paths after the most recent 5
+		GL.LineWidth(1);
+		color = 0.1f;
+		int length = model.astar.walkedPaths.Count - 5;
+		if (length < 0) { return; }
+		foreach (var path in model.astar.walkedPaths.GetRange(0, length).TakeLast(30))
 		{
-			GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+			GL.Color4(0.9f, color, color, 1.0f);
+			color += 0.01f;
+			GL.Begin(PrimitiveType.Lines);
+			GL.Vertex2(model.astar.nodes[model.astar.startNode][0], model.astar.nodes[model.astar.startNode][1]);
+			foreach (var point in path.Skip(1))
+			{
+				// If not given 2 times, just every second line is drawn
+				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+			}
+			GL.End();
 		}
-		GL.End();
+
+		// Draws the rest of the paths
+		GL.LineWidth(1);
+		color = 0.4f;
+		length = model.astar.walkedPaths.Count - 35;
+		if (length < 0) { return; }
+		foreach (var path in model.astar.walkedPaths.GetRange(0, length))
+		{
+			GL.Color4(0.9f, color, color, 1.0f);
+			GL.Begin(PrimitiveType.Lines);
+			GL.Vertex2(model.astar.nodes[model.astar.startNode][0], model.astar.nodes[model.astar.startNode][1]);
+			foreach (var point in path.Skip(1))
+			{
+				// If not given 2 times, just every second line is drawn
+				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+				GL.Vertex2(model.astar.nodes[point][0], model.astar.nodes[point][1]);
+			}
+			GL.End();
+		}
 	}
 
 	private void DrawGrid(IReadOnlyGrid<CellType> grid)

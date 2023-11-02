@@ -1,11 +1,11 @@
 using Example;
 using Framework;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Desktop;
 using System.Reflection;
 
 string levelFile = Assembly.GetExecutingAssembly().Location + ".level.json";
 GameWindow window = ExampleWindow.Create();
-
 
 Model model = new();
 View view = new();
