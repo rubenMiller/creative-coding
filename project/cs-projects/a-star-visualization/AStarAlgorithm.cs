@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Transactions;
 using OpenTK.Graphics.ES11;
 using OpenTK.Graphics.ES20;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Example;
 
-public class AStarAlgorithm
+internal class AStarAlgorithm
 {
     PriorityQueue<QueueObject, float> queue = new PriorityQueue<QueueObject, float>(100);
     public List<List<float>> edges;
@@ -18,44 +20,102 @@ public class AStarAlgorithm
     private List<int> lookedAt = new List<int>();
     public List<int> currentPath = new List<int>();
     public List<List<int>> walkedPaths = new List<List<int>>();
-    public int startNode;
-    public int endNode;
+    public int startNode = -1;
+    public int endNode = -1;
+    public bool ResetAble = true;
+    private bool readToRun = true;
     public AStarAlgorithm()
     {
-        (this.nodes, this.edges) = RoadMapReader.ReadGraphFromText();
-        this.neighbours = AStarAlgorithm.MakeNeighbourList(nodes, edges);
-        start();
+        (this.nodes, this.edges, this.neighbours) = RoadMapReader.ReadGraphFromText();
+        //start();
     }
 
-    private void Reset()
+
+    public bool Ready()
+    {
+        if (startNode >= 0 && endNode >= 0 && readToRun)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void Reset()
     {
         this.queue.Clear();
         this.lookedAt.Clear();
         this.currentPath.Clear();
         this.walkedPaths.Clear();
+        startNode = -1;
+        endNode = -1;
+        ResetAble = false;
+        readToRun = true;
     }
 
-    public void start()
+    public void Start()
     {
-        Reset();
-
-        var rand = new Random();
-        startNode = rand.Next(nodes.Count);
-        endNode = rand.Next(nodes.Count);
         float h = (float)CalculateDistance(nodes[startNode], nodes[endNode]);
         var queueObject = new QueueObject(h, 0, startNode, new List<int> { startNode });
         queue.Enqueue(queueObject, h);
+
+
+    }
+    public void SetPath(KeyboardState keyboard, MouseState mouseState, Controller controller)
+    {
+        var rand = new Random();
+        if (keyboard.IsKeyDown(Keys.R))
+        {
+            Console.WriteLine("R");
+            startNode = rand.Next(nodes.Count);
+            endNode = rand.Next(nodes.Count);
+        }
+        else if (mouseState.IsButtonPressed(MouseButton.Left))
+        {
+            // Transform the pixel coordinates into world
+            var world = controller.transformIntoWorld(mouseState.Position);
+            //TODO: this does not work the right way, positions seem to be wrong
+            if (startNode == -1)
+            {
+                startNode = findNearestNeighbour(world);
+            }
+            else if (endNode == -1)
+            {
+                endNode = findNearestNeighbour(world);
+            }
+        }
+    }
+
+
+    private int findNearestNeighbour(Vector2 position)
+    {
+        int currentNN = 0;
+        float currentDist = 10000000;
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            List<double> list = new List<double> { (double)position.X, (double)position.Y };
+            float dist = (float)CalculateDistance(nodes[i], list);
+            if (dist < currentDist)
+            {
+                currentDist = dist;
+                currentNN = i;
+            }
+        }
+
+        return currentNN;
     }
 
     public bool step()
     {
         if (queue.Count < 1)
         {
+            readToRun = false;
             return false;
         }
         QueueObject current = queue.Dequeue();
         if (current.last_node == endNode)
         {
+            readToRun = false;
+            this.currentPath = current.path;
             return false;
         }
 
@@ -78,34 +138,7 @@ public class AStarAlgorithm
         return true;
     }
 
-    private static List<int> FindNeighbors(int pIndex, List<List<float>> edgeList)
-    {
-        List<int> neighbors = new List<int>();
 
-        foreach (var edge in edgeList)
-        {
-            if (edge.Contains(pIndex))
-            {
-                int neighborIndex = (int)((edge[0] == pIndex) ? edge[1] : edge[0]);
-                neighbors.Add(neighborIndex);
-            }
-        }
-
-        return neighbors;
-    }
-
-    public static List<List<int>> MakeNeighbourList(List<List<double>> points, List<List<float>> edgeList)
-    {
-        List<List<int>> pointNeighbours = new List<List<int>>();
-
-        for (int index = 0; index < points.Count; index++)
-        {
-            List<int> neighbors = FindNeighbors(index, edgeList);
-            pointNeighbours.Add(neighbors);
-        }
-
-        return pointNeighbours;
-    }
 
     public static double CalculateDistance(List<double> point, List<double> goal)
     {

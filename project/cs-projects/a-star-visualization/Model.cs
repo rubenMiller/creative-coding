@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Zenseless.Spatial;
 
 namespace Example;
@@ -7,30 +9,49 @@ namespace Example;
 internal class Model
 {
 	public AStarAlgorithm astar = new AStarAlgorithm();
-	private bool running = true;
-	private float downTime = 0;
-	private float maxDownTime = 5;
+	private bool _running = false;
+	public bool Running { get { return _running; } private set { _running = value; } }
+	private float downTime = 2;
+	private float maxDownTime = 2;
 	public Model()
 	{
 
 	}
 
-	internal void Update(float frameTime)
+	internal void Update(float frameTime, KeyboardState keyboard, MouseState mouseState, Controller controller)
 	{
-		if (running == true)
+
+
+		if (_running == false)
 		{
-			running = astar.step();
-		}
-		else
-		{
+			if (!astar.Ready())
+			{
+				astar.SetPath(keyboard, mouseState, controller);
+			}
 			downTime += frameTime;
-			if (downTime > maxDownTime)
+
+			if (downTime > maxDownTime && astar.ResetAble && keyboard.IsKeyPressed(Keys.C))
+			//if (downTime > maxDownTime && astar.ResetAble)
+			{
+				astar.Reset();
+			}
+
+			if (downTime > maxDownTime && astar.Ready())
 			{
 				downTime = 0;
-				running = true;
-				astar.start();
+				astar.Start();
+				_running = true;
 			}
 		}
+
+		//makes multiple steps per update, this means faster a star at the cost of framerate
+		for (int i = 0; i < 10 && _running == true; i++)
+		{
+			_running = astar.step();
+			astar.ResetAble = true;
+		}
+
+
 
 	}
 

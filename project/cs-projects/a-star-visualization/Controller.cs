@@ -43,20 +43,10 @@ internal class Controller
 		// Convert movement from camera space into world space
 		camera.Center += movement.TransformDirection(camera.CameraMatrix.Inverted());
 	}
-	/*
-		internal void Click(Vector2 pixelCoordinates)
-		{
-			Console.WriteLine($"Pixel = {pixelCoordinates}");
-			// Transform the pixel coordinates into world
-			var world = pixelCoordinates.Transform(_view.Camera.GetWindowToWorld());
-			Console.WriteLine($"World = {world}");
-			// Check if coordinates are inside the grid
-			if (world.X < 0 || _model.Grid.Columns < world.X) return;
-			if (world.Y < 0 || _model.Grid.Rows < world.Y) return;
-			// Calculate grid cell
-			var column = (int)Math.Truncate(world.X);
-			var row = (int)Math.Truncate(world.Y);
-			Console.WriteLine($"Grid = {column}, {row}");
-			_model.ClearCell(column, row);
-		}*/
+
+	public Vector2 transformIntoWorld(Vector2 pixelCoordinates)
+	{
+		Console.WriteLine($"Pixel = {pixelCoordinates}");
+		return pixelCoordinates.Transform(_view.Camera.GetWindowToWorld());
+	}
 }

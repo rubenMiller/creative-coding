@@ -15,7 +15,7 @@ Controller controller = new(model, view);
 window.UpdateFrame += args =>
 {
 	controller.Update((float)args.Time, window.KeyboardState, window.MouseState);
-	model.Update((float)args.Time);
+	model.Update((float)args.Time, window.KeyboardState, window.MouseState, controller);
 }; // call update once each frame
 
 window.Resize += args => view.Resize(args.Width, args.Height); // on window resize let the view do whats needs to be done
