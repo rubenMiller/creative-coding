@@ -45,9 +45,9 @@ internal class Model
 		}
 
 		//makes multiple steps per update, this means faster a star at the cost of framerate
-		for (int i = 0; i < 10 && _running == true; i++)
+		if( _running == true)
 		{
-			_running = astar.step();
+			_running = astar.Update();
 			astar.ResetAble = true;
 		}
 

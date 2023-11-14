@@ -162,7 +162,7 @@ public class RoadMapReader
         {
             List<int> neighbors = FindNeighbors(index, edgeList);
             pointNeighbours.Add(neighbors);
-            Console.WriteLine("At: " + index + " from: " + points.Count);
+            //Console.WriteLine("At: " + index + " from: " + points.Count);
         }
 
         return pointNeighbours;

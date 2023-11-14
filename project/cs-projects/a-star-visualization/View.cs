@@ -51,7 +51,7 @@ internal class View
 
 	private void DrawMap(Model model)
 	{
-		Console.WriteLine(model.astar.startNode + ", " + model.astar.endNode);
+		//WriteLine(model.astar.startNode + ", " + model.astar.endNode);
 		Vector4 red = (1f, 0, 0, 1f);
 		Vector4 white = (0.3f, 0.3f, 0.3f, 1f);
 
@@ -98,7 +98,7 @@ internal class View
 		}
 
 		//GL.LineWidth(2);
-		foreach (var path in model.astar.walkedPaths)
+		foreach (var path in model.astar.WalkedPaths)
 		{
 			DrawPath(path, model, red, white);
 		}

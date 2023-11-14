@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using OpenTK.Graphics.ES11;
 using OpenTK.Graphics.ES20;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -13,13 +17,19 @@ namespace Example;
 
 internal class AStarAlgorithm
 {
-    PriorityQueue<QueueObject, float> queue = new PriorityQueue<QueueObject, float>(100);
+    //PriorityQueue<QueueObject, float> queue = new PriorityQueue<QueueObject, float>(100);
+    private ThreadSafeQueue<QueueObject> _queue = new ThreadSafeQueue<QueueObject>();
+    private ConcurrentBag<List<int>>_walkedPaths = new ConcurrentBag<List<int>>();
+    private ConcurrentBag<int> lookedAt = new ConcurrentBag<int>();
+    private List<Thread> threads = new List<Thread>();
+    private int numberOfThreads = 1;
+
+
     public List<List<float>> edges;
     public List<List<double>> nodes;
     private List<List<int>> neighbours;
-    private List<int> lookedAt = new List<int>();
     public List<int> currentPath = new List<int>();
-    public List<List<int>> walkedPaths = new List<List<int>>();
+    public List<List<int>> WalkedPaths = new List<List<int>>();
     public int startNode = -1;
     public int endNode = -1;
     public bool ResetAble = true;
@@ -28,6 +38,31 @@ internal class AStarAlgorithm
     {
         (this.nodes, this.edges, this.neighbours) = RoadMapReader.ReadGraphFromText();
         //start();
+    }
+
+    public bool Update()
+    {
+        foreach(Thread thr in threads)
+        {
+            if (!thr.IsAlive)
+            {
+                readToRun = false;
+                this.WalkedPaths = _walkedPaths.ToList();
+                this.currentPath = WalkedPaths[0];
+                return false;
+            }
+        }
+        if(_walkedPaths.Count == 0)
+        {
+            Console.WriteLine("no walkedpaths" + threads.Count);
+            return true;
+        }
+
+        this.WalkedPaths = _walkedPaths.ToList();
+        this.currentPath = WalkedPaths[0];
+        Console.WriteLine(threads.Count);
+        return true;
+
     }
 
 
@@ -42,10 +77,11 @@ internal class AStarAlgorithm
 
     public void Reset()
     {
-        this.queue.Clear();
+        this._queue.Clear();
         this.lookedAt.Clear();
         this.currentPath.Clear();
-        this.walkedPaths.Clear();
+        this._walkedPaths.Clear();
+        this.threads.Clear();
         startNode = -1;
         endNode = -1;
         ResetAble = false;
@@ -56,9 +92,18 @@ internal class AStarAlgorithm
     {
         float h = (float)CalculateDistance(nodes[startNode], nodes[endNode]);
         var queueObject = new QueueObject(h, 0, startNode, new List<int> { startNode });
-        queue.Enqueue(queueObject, h);
+        _queue.Enqueue(queueObject, h);
 
-
+        for(int i = 0; i < numberOfThreads; i++)
+        {
+            object args = new object[6] {neighbours, nodes, endNode, lookedAt, _walkedPaths, _queue};
+            Thread thr = new Thread(() =>
+            {
+                Worker(neighbours, nodes, endNode, lookedAt, _walkedPaths, _queue);
+            });
+            thr.Start();
+            threads.Add(thr);
+        }
     }
     public void SetPath(KeyboardState keyboard, MouseState mouseState, Controller controller)
     {
@@ -103,6 +148,7 @@ internal class AStarAlgorithm
 
         return currentNN;
     }
+    /*
 
     public bool step()
     {
@@ -136,7 +182,58 @@ internal class AStarAlgorithm
         this.currentPath = current.path;
         walkedPaths.Add(current.path);
         return true;
+    }*/
+
+    private static void Worker(List<List<int>> neighbours, List<List<double>> nodes, int endNode, ConcurrentBag<int> lookedAt, ConcurrentBag<List<int>> walkedPaths, ThreadSafeQueue<QueueObject> queue)
+    //private static void Worker(object args)
+    {
+        // args: {neighbours, nodes, endNode, lookedAt, _walkedPaths, _queue}
+        /*Array argArray = new object[3];
+        argArray = (Array)args;
+        List<List<int>> neighbours = (List<List<int>>)argArray.GetValue(0);
+        List<List<double>> nodes = (List<List<double>>)argArray.GetValue(1);
+        int endNode = (int)argArray.GetValue(2);
+        ConcurrentBag<int> lookedAt = (ConcurrentBag<int>)argArray.GetValue(3);
+        ConcurrentBag<List<int>> walkedPaths = (ConcurrentBag<List<int>>)argArray.GetValue(4);
+        ThreadSafeQueue<QueueObject> queue = (ThreadSafeQueue<QueueObject>)argArray.GetValue(5);*/
+        while (true)
+        {
+            if(queue.Count < 1)
+            {
+                System.Threading.Thread.Sleep(100);
+                continue;
+            }
+            QueueObject current = default(QueueObject);
+            if( !queue.TryDequeue(out current)) {continue;}
+            if (current.last_node == endNode)
+            {
+                return;
+            }
+
+            foreach (var n in neighbours[current.last_node])
+            {
+                if (current.path.Contains(n) || lookedAt.Contains(n))
+                {
+                    continue;
+                }
+                lookedAt.Add(n);
+                float walkedPath = current.walkedDistance + (float)CalculateDistance(nodes[n], nodes[current.last_node]);
+                float h = (float)(walkedPath + CalculateDistance(nodes[n], nodes[endNode]));
+                var path = current.path.Concat(new[] { n }).ToList();
+                var queueObj = new QueueObject(h, walkedPath, n, path);
+                queue.Enqueue(queueObj, h);
+            }
+
+            walkedPaths.Add(current.path);
+            //System.Threading.Thread.Sleep(1);
+        }
+
+
+        
     }
+
+
+    
 
 
 

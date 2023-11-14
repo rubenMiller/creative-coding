@@ -46,7 +46,7 @@ internal class Controller
 
 	public Vector2 transformIntoWorld(Vector2 pixelCoordinates)
 	{
-		Console.WriteLine($"Pixel = {pixelCoordinates}");
+		//Console.WriteLine($"Pixel = {pixelCoordinates}");
 		return pixelCoordinates.Transform(_view.Camera.GetWindowToWorld());
 	}
 }
