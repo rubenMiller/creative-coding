@@ -1,6 +1,7 @@
 # Creative Coding
 
 This repo contains the exercises and my project for the class "creative coding".
+Lecturer is @danielscherzer (https://github.com/danielscherzer).
 
 ## Exercises
 
